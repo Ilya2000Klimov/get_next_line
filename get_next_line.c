@@ -6,7 +6,7 @@
 /*   By: iklimov <iklimov@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/10/13 11:06:28 by iklimov           #+#    #+#             */
-/*   Updated: 2019/10/27 00:52:06 by iklimov          ###   ########.fr       */
+/*   Updated: 2019/10/27 01:20:03 by iklimov          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,6 +37,7 @@ int get_next_line(const int fd, char **line) /*return 0 when file ends, -1, 1*/
 		if (BUFF_SIZE != bites_read)
 			break;
 	}
+	nloc = ft_strchr(tmp, '\n');
 	nloc = (nloc == NULL) ? nloc = tmp + bites_read : nloc;
 	*line = ft_strsub(tmp, 0, ((nloc - tmp) % BUFF_SIZE));
 	if (tmplst == NULL)
