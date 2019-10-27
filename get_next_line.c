@@ -6,7 +6,7 @@
 /*   By: iklimov <iklimov@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/10/13 11:06:28 by iklimov           #+#    #+#             */
-/*   Updated: 2019/10/27 00:46:44 by iklimov          ###   ########.fr       */
+/*   Updated: 2019/10/27 00:52:06 by iklimov          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,7 +32,7 @@ int get_next_line(const int fd, char **line) /*return 0 when file ends, -1, 1*/
 	while(!(nloc = ft_strchr(tmp, '\n')) || nloc == NULL)
 	{
 		bites_read = read(fd, &buff, BUFF_SIZE);
-		buff[BUFF_SIZE] = '\0';
+		buff[bites_read] = '\0';
 		tmp = ft_strjoinreal(tmp, buff);
 		if (BUFF_SIZE != bites_read)
 			break;
