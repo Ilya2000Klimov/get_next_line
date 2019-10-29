@@ -5,127 +5,98 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: iklimov <iklimov@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2019/10/13 11:06:28 by iklimov           #+#    #+#             */
-/*   Updated: 2019/10/28 18:22:56 by iklimov          ###   ########.fr       */
+/*   Created: 2019/10/28 23:40:11 by iklimov           #+#    #+#             */
+/*   Updated: 2019/10/29 05:12:07 by iklimov          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "get_next_line.h"
-#include "libft/libft.h"
+#include <unistd.h>
+#include <stdlib.h>
 #include <stdio.h>
 
-int get_next_line(const int fd, char **line) /*return 0 when file ends, -1, 1*/
+typedef struct		s_node
 {
-	char			buff[BUFF_SIZE + 1];
-	int				bites_read;
-	char			*nloc;
-	char			*tmp;
-	static t_list	*lst;
-	t_list			*tmplst;
+	char			*str;
+	int				fd;
+	struct s_node	*next;
+}					t_node;
 
-	if ((fd < 0 || line == NULL || read(fd, buff, 0) < 0))
-		return (-1);
-	tmplst = ft_list_findsize(lst, (int)fd);
-	tmp = (tmplst != NULL) ? ft_strdup(tmplst->content) : ft_strnew(0);
-	ft_strdel((char**)&(tmplst->content));
-	while(!(nloc = ft_strchr(tmp, '\n')) || nloc == NULL)
+static t_node	*findfd(t_node *head, int fd)
+{
+	t_node *tmp;
+	t_node *out;
+
+	if (!(out = malloc(sizeof(*out))))
+		return (NULL);
+	out->fd = fd;
+	out->next = head;
+	tmp = head;
+	while (tmp)
 	{
-		bites_read = read(fd, &buff, BUFF_SIZE);
-		buff[bites_read] = '\0';
-		tmp = ft_strjoinreal(tmp, buff);
-		if (BUFF_SIZE != bites_read)
+		if (tmp->fd == fd)
 		{
-			nloc = ft_strchr(tmp, '\n');
-			break;
+			out->str = tmp->str;
+			tmp->str = (tmp->next) ? tmp->next->str : NULL;
+			tmp->fd = (tmp->next) ? tmp->next->fd : -1;
+			head = tmp->next;
+			tmp->next = (tmp->next) ? tmp->next->next : NULL;
+			free(head);
+			return (out);
 		}
+		tmp = tmp->next;
 	}
-	bites_read = ft_strlen(tmp);
-	nloc = (nloc == NULL) ? nloc = tmp + bites_read : nloc;
-	*line = ft_strsub(tmp, 0, (nloc - tmp));
-	if (tmplst == NULL)
-	{
-		tmplst = ft_lstnew("", (int)fd);
-		ft_strdel((char**)&tmplst->content);
-		ft_lstadd(&lst, tmplst);
-	}
-	//tmplst->content = strdup(tmp);
-	tmplst->content = ft_strsub(tmp, (nloc + 1 - tmp), bites_read - ((nloc - tmp) % BUFF_SIZE));
-	ft_strdel(&tmp);
-	if (BUFF_SIZE != bites_read && tmplst->content == '\0')
-	{
-		ft_lstdelthis(&tmplst);
-		return 0;
-	}
-	return 1;
+	out->str = NULL;
+	return (out);
 }
 
+static char	*strchr(char *str, char c)
+{
+	while (str && *str)
+	{
+		if (*str == c)
+			return (str);
+		str++;
+	}
+	return (NULL);
+}
 
-// 	//*line = ft_strdup(rem[fd]);
-// 	//check for read errors and invalid fd errors
-// 	//iterate through lst to find the correct fd by using size as the fd (lst->size = fd)  == (*lst).size
-// 	while (read(fd, buff, BUFF_SIZE) != BUFF_SIZE)
-// 	{
-// 		buff[BUFF_SIZE] = '\0';
-// 		if (ft_strchr(buff, '\n'))
-// 			break;
-// 		//concatinate buff to static vars
-// 	}
-// 	//check for stuff stored in your static variables
-// 	//collect the correct line to store in *line
-// 	//remove the line given to *line from your static variable
-// 	//check correct return type and return it
-// 	while (ft_strchr(buff, '\n') == NULL)
-// 	{
-// 		bites_read = read(fd, &buff, BUFF_SIZE);
-// 		*line = ft_strjoin(*line, buff);
-// 		if (BUFF_SIZE != bites_read)
-// 			return (0);
-// 	}
-// 	nloc = ft_strchr(buff, '\n');
-// 	ft_strjoin(*line, ft_strsub(buff, 0, (nloc - buff)));
-// 	//rem = ft_strsub(nloc, 0, bites_read - (nloc - buff));
-// 	return (1);
-// }
+static char	*strjoin(char **s1, char *s2)
+{
+	char		*out;
+	const int	l1 = __builtin_strlen(*s1 ? *s1 : "");
+	const int	l2 = __builtin_strlen(s2);
 
-// int get_next_line(const int fd, char **line)	/*return 0 when file ends, -1, 1*/
-// {
-// 	char		*buff;
-// 	int			bites_read;
-// 	char static	*str;
-// 	char		*nloc;
+	if (!(out = malloc(l1 + l2 + 1)))
+		return (NULL);
+	__builtin_memcpy(out, *s1 ? *s1 : "", l1);
+	__builtin_memcpy((out + l1), s2, l2);
+	out[l1 + l2] = '\0';
+	free(*s1);
+	*s1 = NULL;
+	return (out);
+}
 
-// 	if (fd > 65535)
-// 		return (-1);
-// 	buff = ft_strdup(str);
-// 	while (!(nloc = ft_strchr(buff, '\n')))
-// 	{
-// 		if (BUFF_SIZE != read(fd, &buff, BUFF_SIZE));
-// 			return (-1);
-// 	}
+int	get_next_line(const int fd, char **line)
+{
+	static t_node	*rem = NULL;
+	char			buff[BUFF_SIZE + 1];
+	char			*nloc;
+	int				bitesread;
+	char			*tmp;
 
-// 	*line = ft_strjoin(str, buff);
-// 	*str = ft_strsub(buff, 0, bites_read);
-// 	if (BUFF_SIZE != bites_read)
-// 		return (0);
-// 	return (1);
-// }
-
-// int get_next_line(const int fd, char **line)
-// {
-// 	char buff[11];
-// 	int bytes_read;
-// 	buff[10] = '\0';
-// 	//int static i = 10;
-
-// 	bytes_read = read(fd, &buff, 10);
-// 	// while (bytes_read == 10)
-// 	// {
-// 	// 	*line = ft_strjoin(*line, buff);
-// 	// 	bytes_read = read(fd, &buff, 10);
-// 	// }
-// 	*line = ft_strdup(buff);
-// 	if (bytes_read != 10)
-// 		return 0;
-// 	return 1;
-// }
-
+	if (fd < 0 || !line || read(fd, buff, 0) || !(rem = findfd(rem, fd)))
+		return (-1);
+	while (!(nloc = strchr(rem->str, '\n')))
+	{
+		if ((bitesread = read(fd, buff, BUFF_SIZE)) <= 0)
+			break ;
+		buff[bitesread >= 0 ? bitesread : 0] = '\0';
+		rem->str = strjoin(&rem->str, buff);
+	}
+	*line = nloc ? __builtin_strndup(rem->str, nloc - rem->str) : __builtin_strdup(rem->str);
+	tmp = rem->str;
+	rem->str = nloc ? __builtin_strdup(nloc + 1) : NULL;
+	free(tmp);
+	return (bitesread != BUFF_SIZE && !rem->str) ? 0 : 1;
+}
