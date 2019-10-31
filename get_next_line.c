@@ -6,7 +6,7 @@
 /*   By: iklimov <iklimov@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/10/28 23:40:11 by iklimov           #+#    #+#             */
-/*   Updated: 2019/10/30 21:18:26 by iklimov          ###   ########.fr       */
+/*   Updated: 2019/10/30 22:13:27 by iklimov          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,8 +27,11 @@ static t_node	*findfd(t_node *head, int fd)
 	t_node *tmp;
 	t_node *out;
 
+	if(head && head->fd == fd)
+		return head;
 	if (!(out = malloc(sizeof(*out))))
 		return (NULL);
+	//printf("\nMALLOKED THIS%p\n", out);
 	out->fd = fd;
 	out->next = head;
 	tmp = head;
@@ -41,6 +44,7 @@ static t_node	*findfd(t_node *head, int fd)
 			tmp->fd = (tmp->next) ? tmp->next->fd : -1;
 			head = tmp->next;
 			tmp->next = (tmp->next) ? tmp->next->next : NULL;
+			//printf("\nFREED THIS%p\n", head);
 			free(head);
 			return (out);
 		}
@@ -138,6 +142,14 @@ int	get_next_line(const int fd, char **line)
 	*line = nloc ? __builtin_strndup(rem->str, nloc - rem->str) : ft_strdup(rem->str);
 	tmp = rem->str;
 	rem->str = nloc ? __builtin_strdup(nloc + 1) : __builtin_strdup("");
+	if (**line == '\0' && !bitesread)
+	{
+		remv = rem;
+		rem = rem->next;
+		free(remv->str);
+		free(remv);
+		//printf("\nFREED THIS%p\n", remv);
+	}
 	free(tmp);
 	return (**line == '\0' && !bitesread) ? 0 : 1;
 }
