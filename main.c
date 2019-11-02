@@ -6,13 +6,14 @@
 /*   By: iklimov <iklimov@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/10/13 16:54:09 by iklimov           #+#    #+#             */
-/*   Updated: 2019/10/28 18:55:27 by iklimov          ###   ########.fr       */
+/*   Updated: 2019/10/30 21:59:19 by iklimov          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "get_next_line.h"
 #include <stdio.h>
 #include <sys/stat.h>
+#include <fcntl.h>
 
 // int main()
 // {
@@ -58,6 +59,10 @@
 // 	// 	i++;
 // 	// }
 
+#include <unistd.h>
+#include <fcntl.h>
+#include <stdlib.h>
+
 int main(int argc, char **argv)
 {
 	int fd;
@@ -77,12 +82,13 @@ int main(int argc, char **argv)
 			printf("Error, cannot open file\n");
 			return (1);
 		}
-		printf("File: %s\n\n", argv[i]);
-		while ((ret = get_next_line(fd, &str)) != 0)
+		printf("File: %s, fd %d\n\n", argv[i], fd);
+		while ((ret = get_next_line(fd, &str)) > 0)
 		{
 			printf("[%s]\n", str);
 			free(str);
 		}
+		free(str);
 		printf("\n\n:End of File \"%s\"\n\n", argv[i]);
 		if (ret == -1)
 		{
@@ -91,5 +97,6 @@ int main(int argc, char **argv)
 		}
 		i++;
 	}
+	while(1);
 	return (0);
 }
