@@ -6,13 +6,12 @@
 /*   By: iklimov <iklimov@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/10/28 23:40:11 by iklimov           #+#    #+#             */
-/*   Updated: 2019/11/01 23:52:45 by iklimov          ###   ########.fr       */
+/*   Updated: 2019/12/09 23:03:33 by iklimov          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "get_next_line.h"
 #include <fcntl.h>
-#include <stdio.h>
 
 static t_node	*findfd(t_node *head, int fd)
 {
@@ -64,5 +63,5 @@ int				get_next_line(const int fd, char **line)
 	tmp = rem->str;
 	rem->str = nl ? ft_strdup(nl + 1) : ft_strdup("");
 	free(tmp);
-	return (**line == '\0' && !bitesread) ? 0 : 1;
+	return (**line == '\0' && !bitesread && !ft_strlen(rem->str)) ? 0 : 1;
 }
